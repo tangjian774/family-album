@@ -16,16 +16,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "密码", type: "password" },
       },
       async authorize(credentials) {
+         if (!credentials) return null;
          const { email, password } = credentials as { email: string; password: string };
         if (!email || !password) {
           return null;
         }
-        const newHash = await bcrypt.hash("123456", 10);
-         console.log(newHash);
        
         // 从数据库查找用户
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email },
         });
         if (!user || !user.password) {
           return null;
