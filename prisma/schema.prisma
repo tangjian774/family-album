@@ -1,0 +1,73 @@
+generator client {
+  provider      = "prisma-client-js"
+  // 强制使用原生 Arm64 架构引擎，M2 芯片专属优化
+  binaryTargets = ["native", "darwin-arm64"]
+}
+
+// 开发环境用 SQLite，无需安装额外数据库软件
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表 - 存储账号信息
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String? // 加密后的密码
+  image         String? // 头像 URL
+  role          String    @default("USER") // ADMIN(管理员) / USER(普通用户)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // 反向关联（修复关联报错的核心）
+  sessions Session[]
+  accounts Account[]
+  photos   Photo[]
+}
+
+// 照片表 - 核心业务表
+model Photo {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  url         String // Cloudinary 图片地址
+  publicId    String // Cloudinary 文件 ID，用于删除
+  width       Int?
+  height      Int?
+  shootTime   DateTime?
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Auth.js 必备会话表
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Auth.js 第三方登录表（预留，后续可扩展微信/QQ登录）
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}

@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example  # 保留示例环境变量文件（可选，推荐）
 
 # vercel
 .vercel
@@ -39,3 +40,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Prisma 相关（补充）
+/prisma/dev.db*  # 本地 SQLite 数据库文件（如果之前用过）
+/prisma/migrations  # 可选：如果用 migrate 而不是 push，可忽略迁移文件
+/prisma/*.db  # 所有本地数据库文件
+
+# 编辑器/IDE 配置（补充，可选）
+.idea/
+.vscode/
+*.swp
+*.swo
